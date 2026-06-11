@@ -1,0 +1,13 @@
+checkpoints/
+indexes/
+data/raw/
+data/processed/train_triplets.jsonl
+data/processed/val_triplets.jsonl
+data/processed/jm_chunks.jsonl
+__pycache__/
+*.pyc
+*.pyo
+.DS_Store
+*.pt
+*.index
+*.pkl
