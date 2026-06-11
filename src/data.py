@@ -54,7 +54,7 @@ def download_msmarco(
         _print_stats(train_path, val_path)
         return
 
-    print("Downloading Data")
+    print("Downloading MS MARCO")
     ds = load_dataset("microsoft/ms_marco", "v2.1", split="train", streaming=True, trust_remote_code=True)
 
     triplets: list[dict] = []
@@ -91,8 +91,8 @@ def download_squad(
     out_dir: str = "data/processed",
 ) -> None:
     """
-    Download SQuAD and save train/val triplets.
-    query = question, pos = context paragraph, neg = random context from different article.
+    Download SQuAD and save train/val triplets
+    query = question, pos = context paragraph, neg = random context from different article
     """
     random.seed(42)
     out_dir = Path(out_dir)
@@ -105,7 +105,7 @@ def download_squad(
         _print_stats(train_path, val_path)
         return
 
-    print("Loading SQuAD...")
+    print("Downloading SQuAD")
     ds = load_dataset("rajpurkar/squad", split="train")
 
     title_to_contexts: dict[str, list[str]] = {}
@@ -124,7 +124,7 @@ def download_squad(
         if len(triplets) >= train_size + val_size:
             break
 
-    print(f"Collected {len(triplets)} SQuAD triplets")
+    print(f"Triplet amount : {len(triplets)}")
     _write_jsonl(triplets[:train_size], train_path)
     _write_jsonl(triplets[train_size:train_size + val_size], val_path)
     _print_stats(train_path, val_path)
@@ -136,8 +136,8 @@ def download_nq(
     out_dir: str = "data/processed",
 ) -> None:
     """
-    Download Natural Questions and save train/val triplets.
-    query = question, pos = Wikipedia long answer, neg = random other passage.
+    Download Natural Questions and save train/val triplets
+    query = question, pos = Wikipedia long answer, neg = random other passage
     """
     random.seed(42)
     out_dir = Path(out_dir)
@@ -178,7 +178,7 @@ def download_nq(
         text = " ".join(text_tokens).strip()
         return text if len(text.split()) >= 20 else None
 
-    print("Streaming Natural Questions...")
+    print("Downloading Natural Questions")
     ds = load_dataset(
         "google-research-datasets/natural_questions",
         split="train",
@@ -200,7 +200,7 @@ def download_nq(
         if len(triplets) >= train_size + val_size:
             break
 
-    print(f"Collected {len(triplets)} NQ examples ({skipped} skipped)")
+    print(f"Triplet amount : {len(triplets)} ({skipped} skipped)")
 
     for t in triplets:
         neg = random.choice(passages)
@@ -250,7 +250,6 @@ def chunk_pdfs(
             text = page.extract_text() or ""
             raw_text += text + " "
 
-        # Fix hyphenated line-break artifacts: "lan-\nguage" → "language"
         raw_text = re.sub(r'(\w+)-\n(\w+)', r'\1\2', raw_text)
         raw_text = re.sub(r"\s+", " ", raw_text).strip()
         words = raw_text.split()
@@ -281,14 +280,6 @@ def chunk_pdfs(
 def load_jsonl(path: str) -> list[dict]:
     with open(path, encoding="utf-8") as f:
         return [json.loads(line) for line in f]
-
-
-def load_chunks(path: str = "data/processed/chunks.jsonl") -> list[dict]:
-    return load_jsonl(path)
-
-
-def load_eval(path: str = "data/processed/eval.jsonl") -> list[dict]:
-    return load_jsonl(path)
 
 
 class TripletDataset(Dataset):

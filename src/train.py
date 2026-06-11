@@ -14,7 +14,7 @@ from data import TripletDataset
 from tokenizer import load_tokenizer
 
 
-BATCH_SIZE      = 64
+BATCH_SIZE      = 256
 LR              = 1e-3
 WEIGHT_DECAY    = 0.01
 WARMUP_STEPS    = 500
@@ -25,11 +25,11 @@ PASSAGE_MAX_LEN = 256
 
 TOKENIZER_NAME  = "data/processed/bpe_tokenizer.json"
 TRAIN_PATHS     = [
-    "data/processed/train_triplets.jsonl",
-    # "data/processed/squad_train_triplets.jsonl",
+    "data/processed/msmarco_train_triplets.jsonl",
+    "data/processed/squad_train_triplets.jsonl",
     # "data/processed/nq_train_triplets.jsonl",
 ]
-VAL_PATH        = "data/processed/val_triplets.jsonl"
+VAL_PATH        = "data/processed/msmarco_val_triplets.jsonl"
 CHECKPOINT_DIR  = "checkpoints"
 EARLY_STOP_PAT  = 2
 LOG_EVERY       = 100

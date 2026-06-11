@@ -14,7 +14,7 @@ _BPE_SPECIAL_TOKENS = ["[PAD]", "[UNK]", "[CLS]", "[SEP]"]
 
 
 def _split(text: str) -> list[str]:
-    """Lowercase + keep alphanumeric, apostrophes, hyphens."""
+    """Lowercase + keep alphanumeric, apostrophes, hyphens"""
     text = text.lower()
     text = re.sub(r"[^a-z0-9\s'\-]", " ", text)
     return text.split()
@@ -64,7 +64,7 @@ class WordTokenizer:
                text: str,
                max_length: int = 256,
                truncation: bool = True) -> tuple[list[int], list[int]]:
-        """Encode string -> (input_ids, attention_mask)."""
+        """Encode string -> (input_ids, attention_mask)"""
         tokens = [self.CLS_ID]
         tokens.extend([self.word2id.get(t, self.UNK_ID) for t in _split(text)])
         tokens.append(self.SEP_ID)
@@ -78,7 +78,7 @@ class WordTokenizer:
                   batch_masks: list[list[int]],
                   max_length: int | None = None,
                   pad_to_max: bool = False) -> tuple[list, list]:
-        """Pad a batch of variable-length sequences."""
+        """Pad a batch of variable-length sequences"""
         if pad_to_max and max_length is not None:
             target = max_length
         else:
@@ -162,8 +162,8 @@ def build_bpe_tokenizer(
     vocab_size: int = 30_000,
 ) -> PreTrainedTokenizerFast:
     """
-    Train a BPE tokenizer from scratch on triplet corpora + optional raw texts.
-    Saves to {save_dir}/bpe_tokenizer.json and returns a PreTrainedTokenizerFast.
+    Train a BPE tokenizer from scratch on triplet corpora + optional raw texts
+    Saves to {save_dir}/bpe_tokenizer.json and returns a PreTrainedTokenizerFast
 
     Args:
         corpus_paths: JSONL files with {"query", "pos", "neg"} records
@@ -189,7 +189,7 @@ def build_bpe_tokenizer(
         special_tokens=_BPE_SPECIAL_TOKENS,
         min_frequency=2,
     )
-    print(f"Training BPE tokenizer on {len(corpus_paths)} corpus file(s)...")
+    print(f"Training BPE tokenizer on {len(corpus_paths)} corpus file(s)")
     raw_tok.train_from_iterator(_corpus_iterator(), trainer=trainer)
 
     save_path = Path(save_dir) / "bpe_tokenizer.json"
@@ -207,34 +207,28 @@ def build_bpe_tokenizer(
     return fast_tok
 
 
-def load_tokenizer(name_or_path: str = "data/processed/bpe_tokenizer.json"):
+def load_tokenizer(tok_name: str = "data/processed/bpe_tokenizer.json"):
     """
-    Load a tokenizer from a .json file.
-    Auto-detects format: BPE (tokenizers library) vs WordTokenizer by checking
-    whether the JSON has a 'model' key (BPE) or 'word2id' key (WordTokenizer).
-    Falls back to HuggingFace AutoTokenizer for non-.json paths.
+    Load a tokenizer from a .json file or from HuggingFace by name or path
     """
-    p = Path(name_or_path)
+    p = Path(tok_name)
     if p.suffix == ".json":
         if not p.exists():
-            raise FileNotFoundError(
-                f"Tokenizer file not found: {name_or_path}\n"
-                "Build it first: build_bpe_tokenizer([...]) or build_vocab_from_triplets(...)"
-            )
+            raise FileNotFoundError(f"Tokenizer file not found: {tok_name}. Build it first")
         with open(p, encoding="utf-8") as f:
             meta = json.load(f)
         if "model" in meta:
             return PreTrainedTokenizerFast(
-                tokenizer_file=name_or_path,
+                tokenizer_file=tok_name,
                 unk_token="[UNK]",
                 pad_token="[PAD]",
                 cls_token="[CLS]",
                 sep_token="[SEP]",
             )
-        return WordTokenizer.load(name_or_path)
+        return WordTokenizer.load(tok_name)
 
-    print(f"Loading HuggingFace tokenizer: {name_or_path}")
-    return AutoTokenizer.from_pretrained(name_or_path)
+    print(f"Loading HuggingFace tokenizer: {tok_name}")
+    return AutoTokenizer.from_pretrained(tok_name)
 
 
 def build_vocab_from_triplets(
@@ -244,8 +238,8 @@ def build_vocab_from_triplets(
     min_freq: int = 2,
 ) -> WordTokenizer:
     """
-    Read training triplets and build a WordTokenizer vocabulary from all text fields.
-    Saves the vocab to save_path and returns the fitted tokenizer.
+    Read training triplets and build a WordTokenizer vocabulary from all text fields
+    Saves the vocab to save_path and returns the fitted tokenizer
     """
     texts = []
     with open(triplets_path, encoding="utf-8") as f:

@@ -56,9 +56,8 @@ def ndcg_at_k(results: list, qrels: dict, k: int = 10) -> float:
 
 def mean_rank(results: list, qrels: dict) -> float:
     """
-    Average rank of the first relevant chunk across all queries.
-    Unlike MRR, not bounded by K — reflects position in the full ranked list.
-    Returns inf if no relevant chunk was found in any retrieved list.
+    Average rank of the first relevant chunk across all queries
+    Returns inf if no relevant chunk was found in any retrieved list
     """
     rank_sum, found = 0.0, 0
     for query_id, retrieved in results:
