@@ -12,9 +12,9 @@ from retrieval import BM25Retriever, DenseRetriever, TFIDFRetriever
 from train import load_model
 
 DATASETS = {
-    "J&M NLP Textbook":          ("nlp",  "data/processed/chunks_nlp.jsonl"),
-    "Theory of Computation":      ("oov",  "data/processed/chunks_oov.jsonl"),
-    "WW2 Wikipedia":              ("wiki", "data/processed/chunks_wiki.jsonl"),
+    "J&M NLP Textbook": ("nlp", "data/processed/chunks_nlp.jsonl"),
+    "Theory of Computation": ("oov", "data/processed/chunks_oov.jsonl"),
+    "WW2 Wikipedia": ("wiki", "data/processed/chunks_wiki.jsonl"),
 }
 
 CHECKPOINT = "checkpoints/TextEncoder-4L-256d-scratch/best_model.pt"
@@ -50,8 +50,6 @@ def highlight_terms(text: str, query: str) -> str:
         text = re.sub(rf"(?i)({re.escape(term)})", r"**\1**", text)
     return text
 
-
-# ── UI ────────────────────────────────────────────────────────────────────────
 
 st.set_page_config(page_title="Neural Search Engine", layout="wide")
 st.title("Neural Search Engine")
