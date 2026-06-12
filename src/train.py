@@ -18,8 +18,8 @@ BATCH_SIZE      = 256
 LR              = 1e-3
 WEIGHT_DECAY    = 0.01
 WARMUP_STEPS    = 500
-EPOCHS          = 5
-TEMPERATURE     = 0.05
+EPOCHS          = 20
+TEMPERATURE     = 0.07
 QUERY_MAX_LEN   = 64
 PASSAGE_MAX_LEN = 256
 
@@ -32,11 +32,11 @@ TRAIN_PATHS = [
     # "data/processed/nq_train_triplets.jsonl",
 ]
 VAL_PATHS = [
-    "data/processed/val_triplets.jsonl",
+    "data/processed/msmarco_val_triplets.jsonl",
     "data/processed/book_val_triplets.jsonl",
 ]
 CHECKPOINT_DIR = "checkpoints"
-EARLY_STOP_PAT = 2
+EARLY_STOP_PAT = 4
 LOG_EVERY = 100
 
 

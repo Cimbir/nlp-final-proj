@@ -270,7 +270,6 @@ def chunk_pdfs(
 
     _write_jsonl(chunks, out_path)
     wc = [c["word_count"] for c in chunks]
-    print()
     print("stats:")
     print(f"Created {len(chunks)} chunks")
     print(f"avg {sum(wc)/len(wc):.0f} words | range [{min(wc)}, {max(wc)}]")
