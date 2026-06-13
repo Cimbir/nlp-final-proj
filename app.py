@@ -72,7 +72,9 @@ with col_k:
 dataset_key, chunks_path = DATASETS[dataset_label]
 st.caption(f"Corpus: `{chunks_path}`")
 
-query = st.text_input("Enter your query", placeholder="e.g. What is the Viterbi algorithm?")
+query = st.text_input(
+    "Enter your query", placeholder="e.g. What is the Viterbi algorithm?"
+)
 
 if query.strip():
     try:

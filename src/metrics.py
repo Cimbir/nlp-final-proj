@@ -78,17 +78,7 @@ def run_evaluation(
     **retriever_kwargs,
 ) -> dict:
     """
-    Run a retriever over all eval queries and compute all metrics
-
-    Args:
-        retriever: object with .search(query, k, **kwargs) -> [(score, text, chunk_id)]
-        eval: list of {"query_id": str, "query": str, "chunk_id": str}
-        k_values: list of K values to evaluate at
-        rank_k: how many results to retrieve for MeanRank (should be >= corpus size for true mean rank)
-        retriever_kwargs: extra keyword args forwarded to retriever.search()
-
-    Returns:
-        dict of metric_name -> float, e.g. {"Recall@1": 0.42, "MRR@10": 0.55, "MeanRank": 12.3, ...}
+    Runs a retriever over all eval queries and computes all metrics
     """
     qrels: dict = {}
     for item in eval:
