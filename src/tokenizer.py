@@ -36,13 +36,11 @@ class WordTokenizer:
         self.word2id: dict[str, int] = {t: i for i, t in enumerate(self.SPECIAL_TOKENS)}
         self.id2word: dict[int, str] = {i: t for i, t in enumerate(self.SPECIAL_TOKENS)}
 
-    def build_vocab(self,
-                    texts: list[str],
-                    max_vocab_size: int = 30000,
-                    min_freq: int = 2) -> None:
+    def build_vocab(
+        self, texts: list[str], max_vocab_size: int = 30000, min_freq: int = 2
+    ) -> None:
         """
         Build vocabulary from a list of raw text strings
-        Call this once on your training corpus before saving
         """
         counter: Counter = Counter()
         for text in texts:
@@ -60,10 +58,9 @@ class WordTokenizer:
 
         print(f"Vocabulary built: {len(self.word2id):,} tokens")
 
-    def encode(self,
-               text: str,
-               max_length: int = 256,
-               truncation: bool = True) -> tuple[list[int], list[int]]:
+    def encode(
+        self, text: str, max_length: int = 256, truncation: bool = True
+    ) -> tuple[list[int], list[int]]:
         """Encode string -> (input_ids, attention_mask)"""
         tokens = [self.CLS_ID]
         tokens.extend([self.word2id.get(t, self.UNK_ID) for t in _split(text)])
@@ -73,11 +70,13 @@ class WordTokenizer:
         mask = [1] * len(tokens)
         return tokens, mask
 
-    def pad_batch(self,
-                  batch_ids: list[list[int]],
-                  batch_masks: list[list[int]],
-                  max_length: int | None = None,
-                  pad_to_max: bool = False) -> tuple[list, list]:
+    def pad_batch(
+        self,
+        batch_ids: list[list[int]],
+        batch_masks: list[list[int]],
+        max_length: int | None = None,
+        pad_to_max: bool = False,
+    ) -> tuple[list, list]:
         """Pad a batch of variable-length sequences"""
         if pad_to_max and max_length is not None:
             target = max_length
@@ -93,21 +92,16 @@ class WordTokenizer:
             padded_masks.append(mask + [0] * pad_len)
         return padded_ids, padded_masks
 
-    def __call__(self,
-                 texts: str | list[str],
-                 max_length: int = 256,
-                 padding: bool | str = True,
-                 truncation: bool = True,
-                 return_tensors: bool = False) -> dict:
+    def __call__(
+        self,
+        texts: str | list[str],
+        max_length: int = 256,
+        padding: bool | str = True,
+        truncation: bool = True,
+        return_tensors: bool = False,
+    ) -> dict:
         """
-        Args:
-            texts: single string or list of strings
-            max_length: maximum sequence length (used when truncation=True or padding="max_length")
-            padding: True / "longest" -> pad to longest in batch; "max_length" -> pad to max_length
-            truncation: truncate to max_length
-            return_tensors: "pt" to return torch.Tensors, None for lists
-        Returns:
-            dict with "input_ids" and "attention_mask"
+        Returns dict with input_ids and attention_mask
         """
         if isinstance(texts, str):
             texts = [texts]
@@ -118,18 +112,17 @@ class WordTokenizer:
             all_ids.append(ids)
             all_masks.append(mask)
 
-        pad_to_max = (padding == "max_length")
-        all_ids, all_masks = self.pad_batch(all_ids, all_masks, max_length=max_length, pad_to_max=pad_to_max)
+        pad_to_max = padding == "max_length"
+        all_ids, all_masks = self.pad_batch(
+            all_ids, all_masks, max_length=max_length, pad_to_max=pad_to_max
+        )
 
         if return_tensors:
             return {
                 "input_ids": torch.tensor(all_ids, dtype=torch.long),
                 "attention_mask": torch.tensor(all_masks, dtype=torch.long),
-                }
-        return {
-            "input_ids": all_ids,
-            "attention_mask": all_masks
             }
+        return {"input_ids": all_ids, "attention_mask": all_masks}
 
     def save(self, path: str) -> None:
         Path(path).parent.mkdir(parents=True, exist_ok=True)
@@ -163,13 +156,8 @@ def build_bpe_tokenizer(
 ) -> PreTrainedTokenizerFast:
     """
     Train a BPE tokenizer from scratch on triplet corpora + optional raw texts
-
-    Args:
-        corpus_paths: JSONL files with {"query", "pos", "neg"} records
-        extra_texts: additional raw text strings (e.g. J&M corpus chunks)
-        save_dir: directory to write bpe_tokenizer.json
-        vocab_size: target vocabulary size including special tokens
     """
+
     def _corpus_iterator():
         for path in corpus_paths:
             with open(path, encoding="utf-8") as f:
@@ -208,12 +196,14 @@ def build_bpe_tokenizer(
 
 def load_tokenizer(tok_name: str = "data/processed/bpe_tokenizer.json"):
     """
-    Load a tokenizer from a .json file or from HuggingFace by name or path
+    Load a tokenizer from a json file
     """
     p = Path(tok_name)
     if p.suffix == ".json":
         if not p.exists():
-            raise FileNotFoundError(f"Tokenizer file not found: {tok_name}. Build it first")
+            raise FileNotFoundError(
+                f"Tokenizer file not found: {tok_name}. Build it first"
+            )
         with open(p, encoding="utf-8") as f:
             meta = json.load(f)
         if "model" in meta:
@@ -238,7 +228,7 @@ def build_vocab_from_triplets(
 ) -> WordTokenizer:
     """
     Read training triplets and build a WordTokenizer vocabulary from all text fields
-    Saves the vocab to save_path and returns the fitted tokenizer
+    Save the vocab to save_path and returns the fitted tokenizer
     """
     texts = []
     with open(triplets_path, encoding="utf-8") as f:

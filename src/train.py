@@ -15,13 +15,13 @@ from tokenizer import load_tokenizer
 
 MODEL_NAME = "TextEncoder-4L-256d-nlp-oversampled-neg-no-squad"
 
-BATCH_SIZE      = 256
-LR              = 1e-3
-WEIGHT_DECAY    = 0.01
-WARMUP_STEPS    = 500
-EPOCHS          = 20
-TEMPERATURE     = 0.07
-QUERY_MAX_LEN   = 64
+BATCH_SIZE = 256
+LR = 1e-3
+WEIGHT_DECAY = 0.01
+WARMUP_STEPS = 500
+EPOCHS = 20
+TEMPERATURE = 0.07
+QUERY_MAX_LEN = 64
 PASSAGE_MAX_LEN = 256
 
 TOKENIZER_NAME = "data/processed/bpe_tokenizer.json"
@@ -46,8 +46,10 @@ def validate(model, loader, criterion, device) -> float:
     with torch.no_grad():
         for batch in loader:
             q_emb = model(batch["query_ids"].to(device), batch["query_mask"].to(device))
-            p_emb = model(batch["pos_ids"].to(device),   batch["pos_mask"].to(device))
-            with torch.amp.autocast(device_type=device.type, enabled=(device.type == "cuda")):
+            p_emb = model(batch["pos_ids"].to(device), batch["pos_mask"].to(device))
+            with torch.amp.autocast(
+                device_type=device.type, enabled=(device.type == "cuda")
+            ):
                 loss = criterion(q_emb, p_emb)
             total_loss += loss.item()
             n += 1
@@ -136,11 +138,11 @@ def train() -> dict:
             running_loss = 0.0
 
             for step, batch in enumerate(train_loader):
-                q_ids  = batch["query_ids"].to(device)
+                q_ids = batch["query_ids"].to(device)
                 q_mask = batch["query_mask"].to(device)
-                p_ids  = batch["pos_ids"].to(device)
+                p_ids = batch["pos_ids"].to(device)
                 p_mask = batch["pos_mask"].to(device)
-                n_ids  = batch["neg_ids"].to(device)
+                n_ids = batch["neg_ids"].to(device)
                 n_mask = batch["neg_mask"].to(device)
 
                 with torch.amp.autocast(
@@ -149,7 +151,7 @@ def train() -> dict:
                     q_emb = model(q_ids, q_mask)
                     p_emb = model(p_ids, p_mask)
                     n_emb = model(n_ids, n_mask)
-                    loss  = criterion(q_emb, p_emb, n_emb)
+                    loss = criterion(q_emb, p_emb, n_emb)
 
                 scaler.scale(loss).backward()
                 scaler.unscale_(optimizer)
