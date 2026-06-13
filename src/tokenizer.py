@@ -58,7 +58,7 @@ class WordTokenizer:
                 self.word2id[word] = idx
                 self.id2word[idx] = word
 
-        print(f"Vocabulary built: {len(self.word2id):,} tokens ")
+        print(f"Vocabulary built: {len(self.word2id):,} tokens")
 
     def encode(self,
                text: str,
@@ -163,7 +163,6 @@ def build_bpe_tokenizer(
 ) -> PreTrainedTokenizerFast:
     """
     Train a BPE tokenizer from scratch on triplet corpora + optional raw texts
-    Saves to {save_dir}/bpe_tokenizer.json and returns a PreTrainedTokenizerFast
 
     Args:
         corpus_paths: JSONL files with {"query", "pos", "neg"} records

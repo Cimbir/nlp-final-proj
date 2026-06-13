@@ -51,7 +51,7 @@ class DenseRetriever:
 
     def search(self, query: str, model, tokenizer, k: int = 10,
                device: str = "cpu") -> list[tuple[float, str, str]]:
-        """Returns top-k (score, text, chunk_id) tuples."""
+        """Returns top-k (score, text, chunk_id) tuples"""
         emb = model.encode([query], tokenizer, batch_size=1,
                            max_len=64, device=device).astype(np.float32)
         # (N, d) @ (d, 1) -> (N, 1) -> (N,)

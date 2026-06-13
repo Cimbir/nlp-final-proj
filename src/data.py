@@ -10,6 +10,7 @@ from tqdm import tqdm
 from torch.utils.data import Dataset
 from datasets import load_dataset
 from pypdf import PdfReader
+from rank_bm25 import BM25Okapi
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
@@ -92,7 +93,8 @@ def download_squad(
 ) -> None:
     """
     Download SQuAD and save train/val triplets
-    query = question, pos = context paragraph, neg = random context from different article
+    query = question, pos = context paragraph, neg = BM25-mined hard negative
+    (top BM25 result for the question that is not the gold context)
     """
     random.seed(42)
     out_dir = Path(out_dir)
@@ -108,19 +110,34 @@ def download_squad(
     print("Downloading SQuAD")
     ds = load_dataset("rajpurkar/squad", split="train")
 
-    title_to_contexts: dict[str, list[str]] = {}
-    for ex in ds:
-        title_to_contexts.setdefault(ex["title"], []).append(ex["context"])
-    all_titles = list(title_to_contexts.keys())
+    all_contexts = list({ex["context"] for ex in ds})
+    print(f"Building BM25 index over {len(all_contexts):,} unique contexts")
+    bm25 = BM25Okapi([c.lower().split() for c in all_contexts])
 
     triplets: list[dict] = []
-    for ex in ds:
+    for i, ex in enumerate(ds):
         query = ex["question"].strip()
         pos   = ex["context"].strip()
-        neg_title = random.choice([t for t in all_titles if t != ex["title"]])
-        neg = random.choice(title_to_contexts[neg_title])
+
+        scores   = bm25.get_scores(query.lower().split())
+        top_idxs = scores.argsort()[::-1]
+
+        neg = None
+        for idx in top_idxs[:20]:
+            candidate = all_contexts[idx]
+            if candidate != pos:
+                neg = candidate
+                break
+
+        if not neg:
+            neg = random.choice([c for c in all_contexts if c != pos])
+
         if query and pos and neg:
             triplets.append({"query": query, "pos": pos, "neg": neg})
+
+        if (i + 1) % 10000 == 0:
+            print(f"  {i + 1:,} / {len(ds):,} processed")
+
         if len(triplets) >= train_size + val_size:
             break
 
@@ -283,8 +300,8 @@ def load_jsonl(path: str) -> list[dict]:
 
 class TripletDataset(Dataset):
     """
-    Tokenizes (query, positive, negative) triplets for contrastive training.
-    All three fields are returned and used: neg is passed to InfoNCELoss as a hard negative.
+    Tokenizes (query, positive, negative) triplets for contrastive training
+    All three fields are returned and used: neg is passed to InfoNCELoss as a hard negative
     """
 
     def __init__(
