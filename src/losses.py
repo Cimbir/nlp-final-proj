@@ -6,10 +6,7 @@ import torch.nn.functional as F
 class InfoNCELoss(nn.Module):
     """
     Symmetric InfoNCE loss
-    
-    Args:
-        temperature : softmax temperature 
-                      lower = sharper distribution = harder negatives
+    lower temperature = sharper distribution = harder negatives
     """
 
     def __init__(self, temperature: float = 0.05):
@@ -19,17 +16,15 @@ class InfoNCELoss(nn.Module):
 
     def forward(
         self,
+        # (B, D) L2-normalized query embeddings
         query_embs: torch.Tensor,
+        # (B, D) L2-normalized positive passage embeddings
         pos_embs: torch.Tensor,
+        # (B, D) L2-normalized hard negative embeddings
         neg_embs: torch.Tensor | None = None,
     ) -> torch.Tensor:
         """
-        Args:
-            query_embs: (B, D) L2-normalized query embeddings
-            pos_embs:   (B, D) L2-normalized positive passage embeddings
-            neg_embs:   (B, D) L2-normalized hard negative embeddings (optional)
-        Returns:
-            scalar loss
+        Computes and returns scalar loss
         """
         labels = torch.arange(len(query_embs), device=query_embs.device)
 

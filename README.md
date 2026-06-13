@@ -2,6 +2,8 @@
 
 Neural search over the Jurafsky & Martin *Speech and Language Processing* textbook, using a custom transformer trained from scratch with InfoNCE contrastive learning.
 
+> Authors: Dachi Suramelashvili, Vasiko Vazagaevi
+
 ## Setup
 
 ```bash
@@ -18,7 +20,6 @@ pip install faiss-gpu  # instead of faiss-cpu
 from src.data import download_msmarco
 download_msmarco(train_size=100_000, val_size=5_000)
 ```
-
 
 ### Build Train/Validation data from the book
 ```bash
@@ -65,6 +66,51 @@ See `notebook.ipynb` — Section 4 (Results).
 ```bash
 streamlit run app.py
 ```
+
+## Data Collection / Preprocessing
+
+This are some of the datasets we have used for this project:
+
+### MS MACRO v2.1
+100, 000 Bing Questions, with real human answers. It contains relevant and irrelevant answers for any given query. We can choose relevant answer as the positive answer to the question and the irrelevant one as a negative answer to the query.
+
+![MS MACRO Training](report/msmacro_training.jpeg)
+
+### SQuAD (Stanford Question Answering Dataset)
+Contains Wikipedia article questions and contexts from which the questions are answearable. We take the question as a query and context as a positive answer.
+We pick random context from any data point that is not the positive answer and we let it be the negative answer in the triplet.
+
+![SQuAD Training](report/squad_training.jpeg)
+
+### Speech and Language Processing Book as Dataset
+The problem we encountered was that the previous 2 datasets did not have a lot of ML/NLP terminology. The solution is to turn the SLP book into a dataset itself.
+We looked up the subject index for the book which has listed different words and the pages the words are explained on.
+We have encountered a few problems while we were turning the SLP book into a dataset.
+
+#### Problem 1: Each page might contain parts of different sections
+*Solution:* Implement per-section chunking to separate section texts.
+
+#### Problem 2: Some word explanations are too close to each other, so the positive texts might overlap
+*Solution:* Only capture the window that contains the index term, limit the window size.
+
+#### Problem 3: How to avoid data leakage between train/validation?
+*Solution:* Split the data not by index terms, but by Sections!
+
+#### Problem 4: How to find hard negatives?
+*Solution:* use BM25 to rank every possible answer, exclude positive and pick one of the closest matches.
+
+#### Data Augmentation
+After all this the data we received was still small in size, so we used data augmentation to put each query into predefined templates like
+- what is [query]
+- how [query] works
+- explain [query]
+
+And explanded the size of the dataset this way. The final dataset size was:
+
+- **Train Set:** 6870 rows
+- **Val Set:** 2754 rows
+
+![Book Training](report/book_training.jpeg)
 
 ## Model Architecture
 

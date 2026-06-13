@@ -56,7 +56,13 @@ def download_msmarco(
         return
 
     print("Downloading MS MARCO")
-    ds = load_dataset("microsoft/ms_marco", "v2.1", split="train", streaming=True, trust_remote_code=True)
+    ds = load_dataset(
+        "microsoft/ms_marco",
+        "v2.1",
+        split="train",
+        streaming=True,
+        trust_remote_code=True,
+    )
 
     triplets: list[dict] = []
     skipped = 0
@@ -100,7 +106,7 @@ def download_squad(
     out_dir = Path(out_dir)
     out_dir.mkdir(parents=True, exist_ok=True)
     train_path = out_dir / "squad_train_triplets.jsonl"
-    val_path   = out_dir / "squad_val_triplets.jsonl"
+    val_path = out_dir / "squad_val_triplets.jsonl"
 
     if train_path.exists() and val_path.exists():
         print("SQuAD data already exists, skipping.")
@@ -117,9 +123,9 @@ def download_squad(
     triplets: list[dict] = []
     for i, ex in enumerate(ds):
         query = ex["question"].strip()
-        pos   = ex["context"].strip()
+        pos = ex["context"].strip()
 
-        scores   = bm25.get_scores(query.lower().split())
+        scores = bm25.get_scores(query.lower().split())
         top_idxs = scores.argsort()[::-1]
 
         neg = None
@@ -143,7 +149,7 @@ def download_squad(
 
     print(f"Triplet amount : {len(triplets)}")
     _write_jsonl(triplets[:train_size], train_path)
-    _write_jsonl(triplets[train_size:train_size + val_size], val_path)
+    _write_jsonl(triplets[train_size : train_size + val_size], val_path)
     _print_stats(train_path, val_path)
 
 
@@ -160,7 +166,7 @@ def download_nq(
     out_dir = Path(out_dir)
     out_dir.mkdir(parents=True, exist_ok=True)
     train_path = out_dir / "nq_train_triplets.jsonl"
-    val_path   = out_dir / "nq_val_triplets.jsonl"
+    val_path = out_dir / "nq_val_triplets.jsonl"
 
     if train_path.exists() and val_path.exists():
         print("NQ data already exists, skipping.")
@@ -171,26 +177,30 @@ def download_nq(
         annotations = ex.get("annotations")
         if not annotations:
             return None
-        long_answers = annotations["long_answer"] if isinstance(annotations, dict) else [a["long_answer"] for a in annotations]
+        long_answers = (
+            annotations["long_answer"]
+            if isinstance(annotations, dict)
+            else [a["long_answer"] for a in annotations]
+        )
         if not long_answers:
             return None
         la = long_answers[0]
         start = la["start_token"]
-        end   = la["end_token"]
+        end = la["end_token"]
         if start < 0:
             return None
         doc_tokens = ex["document"]["tokens"]
         if isinstance(doc_tokens, dict):
             token_texts = doc_tokens["token"]
-            is_html     = doc_tokens["is_html"]
+            is_html = doc_tokens["is_html"]
             text_tokens = [
-                token_texts[i] for i in range(start, min(end, len(token_texts)))
+                token_texts[i]
+                for i in range(start, min(end, len(token_texts)))
                 if not is_html[i]
             ]
         else:
             text_tokens = [
-                t["token"] for t in doc_tokens[start:end]
-                if not t.get("is_html", False)
+                t["token"] for t in doc_tokens[start:end] if not t.get("is_html", False)
             ]
         text = " ".join(text_tokens).strip()
         return text if len(text.split()) >= 20 else None
@@ -226,7 +236,7 @@ def download_nq(
         t["neg"] = neg
 
     _write_jsonl(triplets[:train_size], train_path)
-    _write_jsonl(triplets[train_size:train_size + val_size], val_path)
+    _write_jsonl(triplets[train_size : train_size + val_size], val_path)
     _print_stats(train_path, val_path)
 
 
@@ -238,14 +248,6 @@ def chunk_pdfs(
 ) -> list[dict]:
     """
     Extract text from PDF(s) and split into overlapping word-level chunks
-
-    Args:
-        pdf_paths: path or list of paths to PDF files
-        out_path: destination JSONL file
-        chunk_words: target words per chunk
-        overlap_words: overlap between consecutive chunks
-    Returns:
-        list of chunk dicts: {"id", "text", "source", "word_count"}
     """
     if isinstance(pdf_paths, (str, Path)):
         pdf_paths = [pdf_paths]
@@ -267,7 +269,7 @@ def chunk_pdfs(
             text = page.extract_text() or ""
             raw_text += text + " "
 
-        raw_text = re.sub(r'(\w+)-\n(\w+)', r'\1\2', raw_text)
+        raw_text = re.sub(r"(\w+)-\n(\w+)", r"\1\2", raw_text)
         raw_text = re.sub(r"\s+", " ", raw_text).strip()
         words = raw_text.split()
 
@@ -336,10 +338,13 @@ class TripletDataset(Dataset):
     def __getitem__(self, idx: int) -> dict:
         t = self.triplets[idx]
         q_ids, q_mask = self._tok(t["query"], self.query_max_len)
-        p_ids, p_mask = self._tok(t["pos"],   self.passage_max_len)
-        n_ids, n_mask = self._tok(t["neg"],   self.passage_max_len)
+        p_ids, p_mask = self._tok(t["pos"], self.passage_max_len)
+        n_ids, n_mask = self._tok(t["neg"], self.passage_max_len)
         return {
-            "query_ids":  q_ids,  "query_mask": q_mask,
-            "pos_ids":    p_ids,  "pos_mask":   p_mask,
-            "neg_ids":    n_ids,  "neg_mask":   n_mask,
+            "query_ids": q_ids,
+            "query_mask": q_mask,
+            "pos_ids": p_ids,
+            "pos_mask": p_mask,
+            "neg_ids": n_ids,
+            "neg_mask": n_mask,
         }
