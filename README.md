@@ -72,9 +72,13 @@ This are some of the datasets we have used for this project:
 ### MS MACRO v2.1
 100, 000 Bing Questions, with real human answers. It contains relevant and irrelevant answers for any given query. We can choose relevant answer as the positive answer to the question and the irrelevant one as a negative answer to the query.
 
+![MS MACRO Training](report/msmacro_training.jpeg)
+
 ### SQuAD (Stanford Question Answering Dataset)
 Contains Wikipedia article questions and contexts from which the questions are answearable. We take the question as a query and context as a positive answer.
 We pick random context from any data point that is not the positive answer and we let it be the negative answer in the triplet.
+
+![SQuAD Training](report/squad_training.jpeg)
 
 ### Speech and Language Processing Book as Dataset
 The problem we encountered was that the previous 2 datasets did not have a lot of ML/NLP terminology. The solution is to turn the SLP book into a dataset itself.
@@ -103,6 +107,8 @@ And explanded the size of the dataset this way. The final dataset size was:
 
 - **Train Set:** 6870 rows
 - **Val Set:** 2754 rows
+
+![Book Training](report/book_training.jpeg)
 
 ## Model Architecture
 
