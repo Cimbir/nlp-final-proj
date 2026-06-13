@@ -270,7 +270,6 @@ def chunk_pdfs(
 
     _write_jsonl(chunks, out_path)
     wc = [c["word_count"] for c in chunks]
-    print()
     print("stats:")
     print(f"Created {len(chunks)} chunks")
     print(f"avg {sum(wc)/len(wc):.0f} words | range [{min(wc)}, {max(wc)}]")
@@ -284,8 +283,8 @@ def load_jsonl(path: str) -> list[dict]:
 
 class TripletDataset(Dataset):
     """
-    Tokenizes (query, positive, negative) triplets for contrastive training
-    Negative is stored but only used if you extend InfoNCE with hard negatives
+    Tokenizes (query, positive, negative) triplets for contrastive training.
+    All three fields are returned and used: neg is passed to InfoNCELoss as a hard negative.
     """
 
     def __init__(
