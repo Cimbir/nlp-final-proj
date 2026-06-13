@@ -13,7 +13,7 @@ from losses import InfoNCELoss
 from data import TripletDataset
 from tokenizer import load_tokenizer
 
-MODEL_NAME = "TextEncoder-4L-256d-nlp-tuned-neg"
+MODEL_NAME = "TextEncoder-4L-256d-nlp-oversampled-neg-no-squad"
 
 BATCH_SIZE      = 256
 LR              = 1e-3
@@ -25,11 +25,10 @@ QUERY_MAX_LEN   = 64
 PASSAGE_MAX_LEN = 256
 
 TOKENIZER_NAME = "data/processed/bpe_tokenizer.json"
-# Need Combine book dataset(which is smaller) with other datasets
 TRAIN_PATHS = [
     "data/processed/msmarco_train_triplets.jsonl",
     "data/processed/book_train_triplets.jsonl",
-    "data/processed/squad_train_triplets.jsonl",
+    # "data/processed/squad_train_triplets.jsonl",
     # "data/processed/nq_train_triplets.jsonl",
 ]
 VAL_PATHS = [
@@ -76,10 +75,14 @@ def train() -> dict:
     tokenizer = load_tokenizer(TOKENIZER_NAME)
 
     print("Loading datasets")
-    train_datasets = [
-        TripletDataset(p, tokenizer, QUERY_MAX_LEN, PASSAGE_MAX_LEN)
-        for p in TRAIN_PATHS
-    ]
+    train_datasets = []
+    for p in TRAIN_PATHS:
+        ds = TripletDataset(p, tokenizer, QUERY_MAX_LEN, PASSAGE_MAX_LEN)
+        if len(ds) < 20000:
+            repeats = max(1, 100000 // len(ds))
+            ds = ConcatDataset([ds] * repeats)
+            print(f"  oversampled {Path(p).name} × {repeats}")
+        train_datasets.append(ds)
     train_ds = ConcatDataset(train_datasets)
     val_datasets = [
         TripletDataset(p, tokenizer, QUERY_MAX_LEN, PASSAGE_MAX_LEN) for p in VAL_PATHS
