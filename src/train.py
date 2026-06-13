@@ -23,16 +23,21 @@ TEMPERATURE     = 0.05
 QUERY_MAX_LEN   = 64
 PASSAGE_MAX_LEN = 256
 
-TOKENIZER_NAME  = "data/processed/bpe_tokenizer.json"
-TRAIN_PATHS     = [
-    "data/processed/msmarco_train_triplets.jsonl",
-    "data/processed/squad_train_triplets.jsonl",
+TOKENIZER_NAME = "data/processed/bpe_tokenizer.json"
+# Need Combine book dataset(which is smaller) with other datasets
+TRAIN_PATHS = [
+    "data/processed/train_triplets.jsonl",
+    "data/processed/book_train_triplets.jsonl",
+    # "data/processed/squad_train_triplets.jsonl",
     # "data/processed/nq_train_triplets.jsonl",
 ]
-VAL_PATH        = "data/processed/msmarco_val_triplets.jsonl"
-CHECKPOINT_DIR  = "checkpoints"
-EARLY_STOP_PAT  = 2
-LOG_EVERY       = 100
+VAL_PATHS = [
+    "data/processed/val_triplets.jsonl",
+    "data/processed/book_val_triplets.jsonl",
+]
+CHECKPOINT_DIR = "checkpoints"
+EARLY_STOP_PAT = 2
+LOG_EVERY = 100
 
 
 def validate(model, loader, criterion, device) -> float:
