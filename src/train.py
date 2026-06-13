@@ -13,6 +13,7 @@ from losses import InfoNCELoss
 from data import TripletDataset
 from tokenizer import load_tokenizer
 
+MODEL_NAME = "TextEncoder-4L-256d-nlp-tuned-neg"
 
 BATCH_SIZE      = 256
 LR              = 1e-3
@@ -26,13 +27,13 @@ PASSAGE_MAX_LEN = 256
 TOKENIZER_NAME = "data/processed/bpe_tokenizer.json"
 # Need Combine book dataset(which is smaller) with other datasets
 TRAIN_PATHS = [
-    "data/processed/train_triplets.jsonl",
+    "data/processed/msmarco_train_triplets.jsonl",
     "data/processed/book_train_triplets.jsonl",
-    # "data/processed/squad_train_triplets.jsonl",
+    "data/processed/squad_train_triplets.jsonl",
     # "data/processed/nq_train_triplets.jsonl",
 ]
 VAL_PATHS = [
-    "data/processed/msmarco_val_triplets.jsonl",
+    # "data/processed/msmarco_val_triplets.jsonl",
     "data/processed/book_val_triplets.jsonl",
 ]
 CHECKPOINT_DIR = "checkpoints"
@@ -68,7 +69,7 @@ def train() -> dict:
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     print(f"Training on device: {device}")
 
-    model_name = "TextEncoder-4L-256d-scratch"
+    model_name = MODEL_NAME
     ckpt_dir = Path(CHECKPOINT_DIR) / model_name
     ckpt_dir.mkdir(parents=True, exist_ok=True)
 
@@ -132,17 +133,20 @@ def train() -> dict:
             running_loss = 0.0
 
             for step, batch in enumerate(train_loader):
-                q_ids = batch["query_ids"].to(device)
+                q_ids  = batch["query_ids"].to(device)
                 q_mask = batch["query_mask"].to(device)
-                p_ids = batch["pos_ids"].to(device)
+                p_ids  = batch["pos_ids"].to(device)
                 p_mask = batch["pos_mask"].to(device)
+                n_ids  = batch["neg_ids"].to(device)
+                n_mask = batch["neg_mask"].to(device)
 
                 with torch.amp.autocast(
                     device_type=device.type, enabled=(device.type == "cuda")
                 ):
                     q_emb = model(q_ids, q_mask)
                     p_emb = model(p_ids, p_mask)
-                    loss = criterion(q_emb, p_emb)
+                    n_emb = model(n_ids, n_mask)
+                    loss  = criterion(q_emb, p_emb, n_emb)
 
                 scaler.scale(loss).backward()
                 scaler.unscale_(optimizer)

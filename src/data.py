@@ -283,8 +283,8 @@ def load_jsonl(path: str) -> list[dict]:
 
 class TripletDataset(Dataset):
     """
-    Tokenizes (query, positive, negative) triplets for contrastive training
-    Negative is stored but only used if you extend InfoNCE with hard negatives
+    Tokenizes (query, positive, negative) triplets for contrastive training.
+    All three fields are returned and used: neg is passed to InfoNCELoss as a hard negative.
     """
 
     def __init__(
