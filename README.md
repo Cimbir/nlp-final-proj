@@ -13,24 +13,30 @@ pip install faiss-gpu  # instead of faiss-cpu
 
 ## Pipeline
 
-### 1. Download training data
+### Download training data
 ```python
 from src.data import download_msmarco
 download_msmarco(train_size=100_000, val_size=5_000)
 ```
 
-### 2. Chunk J&M corpus
+
+### Build Train/Validation data from the book
+```bash
+python -m src.bookdata
+```
+
+### Chunk J&M corpus
 ```python
 from src.data import chunk_pdfs
 chunk_pdfs(["data/raw/jm_corpus/slp3_ch1.pdf", ...])
 ```
 
-### 3. Train the model
+### Train the model
 ```bash
 python -m src.train
 ```
 
-### 4. Build indexes
+### Build indexes
 ```python
 from src.train import load_model
 from src.retrieval import FAISSRetriever, BM25Retriever, TFIDFRetriever
@@ -52,10 +58,10 @@ tfidf_ret.build(chunks)
 tfidf_ret.save()
 ```
 
-### 5. Evaluate
+### Evaluate
 See `notebook.ipynb` — Section 4 (Results).
 
-### 6. Demo
+### Demo
 ```bash
 streamlit run app.py
 ```
