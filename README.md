@@ -2,6 +2,8 @@
 
 Neural search over the Jurafsky & Martin *Speech and Language Processing* textbook, using a custom transformer trained from scratch with InfoNCE contrastive learning.
 
+> Authors: Dachi Suramelashvili, Vasiko Vazagaevi
+
 ## Setup
 
 ```bash
